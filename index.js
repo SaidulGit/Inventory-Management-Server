@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 require('dotenv').config()
 
@@ -25,12 +25,56 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+
+// Collection
+     const ShopCollection = client.db("inventoryManagement").collection("shopData");
+     const UserCollection = client.db("inventoryManagement").collection("userData");
+
+// Shop data
+app.put("/shop/:email",async (req,res) => {
+  const email = req.params.email
+  const data = req.body;
+  const query = {email : email}
+  const filter = {
+    $set: {
+         ShopName: data.shopName,
+         ShopLogo: data.shopLogo,
+         ShopLocation: data.shopLocation,
+         ShopInformation: data.shopInformation,
+         OwnerName: data.ownerName,
+         OwnerEmail: data.ownerEmail,
+    }
+  }
+  const result = await UserCollection.updateOne(query,filter)
+  res.send(result);
+})
+
+// User data
+app.post("/user",async (req,res) => {
+  const data = req.body;
+  const query = {email : data.email}
+  const exitingUser = await UserCollection.findOne(query);
+  if(exitingUser){
+   return res.send({message : "User allready exit", insertedId : null})
+  }
+  const result = await UserCollection.insertOne(data);
+  res.send(result);
+})
+
+// app.get("/id",async (req,res) => {
+// const value = ShopCollection.find();
+// const result = await value.toArray();
+// res.send(result);
+// })
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
