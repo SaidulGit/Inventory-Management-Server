@@ -28,7 +28,7 @@ async function run() {
 
 
 // Collection
-     const ShopCollection = client.db("inventoryManagement").collection("shopData");
+     const ProductCollection = client.db("inventoryManagement").collection("shopData");
      const UserCollection = client.db("inventoryManagement").collection("userData");
 
 // Shop data
@@ -60,6 +60,31 @@ app.post("/user",async (req,res) => {
   }
   const result = await UserCollection.insertOne(data);
   res.send(result);
+})
+
+app.get("/userdata", async(req,res) => {
+  const data = UserCollection.find();
+  const result = await data.toArray()
+  res.send(result)
+})
+
+app.delete("/delete/:id",async (req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const result = await UserCollection.deleteOne(query)
+  res.send(result)
+})
+
+app.patch("/makeadmin/:id", async (req,res)=>{
+  const id = req.params.id
+  const query = { _id: new ObjectId(id) }
+  const updateAdmin = {
+    $set: {
+      Role : "admin"
+    }
+  }
+  const result = await UserCollection.updateOne(query,updateAdmin)
+  res.send(result)
 })
 
 // app.get("/id",async (req,res) => {
